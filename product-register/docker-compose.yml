@@ -1,0 +1,33 @@
+version: '3'
+
+# volumesはコンテナ間でデータを共有するためのもの(dbデータ)
+volumes:
+  db-data:
+
+services:
+  web:
+    build: .
+    ports:
+      - '3000:3000'
+    volumes:
+      - '.:/product-register'
+    environment:
+      - 'DATABASE_PASSWORD=postgres'
+    # tty = -tと同義
+    # stdin_open = -iと同義 => -it
+    tty: true
+    stdin_open: true
+    # webがdbに依存していることを明示(dbが立ち上がってからwebを立ち上げる)
+    depends_on:
+      - db
+    # webからdbにアクセスするためのホスト名を指定
+    links:
+      - db
+
+  db:
+    image: postgres
+    volumes:
+      - 'db-data:/var/lib/postgresql'
+    environment:
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=postgres'
